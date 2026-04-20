@@ -168,7 +168,6 @@ class Tetromino {
   }
 };
 
-
 let gameState = {
   create: resetGame,
   update: updateGame
