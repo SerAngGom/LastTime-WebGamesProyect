@@ -1,10 +1,17 @@
-let menuState = {
-  preload: function() {
-    game.load.image('inicio', 'imgs/inicio.png');
-  },
+let splashMenuState = {
+  preload: loadSplashMenu,
+  create: createSplashMenu,
+  update: updateSplashMenu
+};
 
-  create: function() {
-    // Fondo
+let enterKey;
+
+function loadSplashMenu(){
+  game.load.image('inicio', 'imgs/inicio.png');
+};
+
+function createSplashMenu(){
+  // Fondo
     let bg = game.add.image(0, 0, 'inicio');
     bg.width = game.width;
     bg.height = game.height;
@@ -22,12 +29,11 @@ let menuState = {
     text.anchor.set(0.5);
 
     // Tecla ENTER
-    this.enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-  },
+    enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+};
 
-  update: function() {
-    if (this.enterKey.justDown) {
+function updateSplashMenu(){
+  if (enterKey.justDown) {
       game.state.start('Game');
     }
-  }
 };
