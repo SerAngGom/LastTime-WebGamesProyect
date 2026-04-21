@@ -10,7 +10,8 @@ const BLOCKS_PER_TETROMINO = 4;
 const N_BLOCK_TYPES = 7;
 
 // Color de las piezas: blanco
-const PIECE_COLOR = 0xFFFFFF;
+const PIECE_COLORS = [0xFF5733,  0x33FF57, 0x3357FF, 0xF333FF, 0xFFBD33, 0x33FFF3, 0x8D33FF];
+
 
 // Scene grid values
 const EMPTY = 0;
@@ -168,7 +169,9 @@ class Tetromino {
   }
 };
 
+
 let gameState = {
+  preload: preLoad,
   create: resetGame,
   update: updateGame
 };
@@ -188,13 +191,18 @@ let move_offsets = {
 
 // Elements for the game
 let tetromino, theTetris;
-let cursors, keyRotate, keyRestart;
+let tetrominoCayendo 
+let cursors, keyRotate, keyRestart, keyStart;
 let gameOverState = false;
 
 let timer, loop;
 let currentMovementTimer = 0;
 let shade, centerText;
 
+function preLoad(){
+  //loading wav assets
+    game.load.audio('GainCoins', 'assets/sounds/GainCoins.wav');
+}
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
 function resetGame() {
@@ -224,6 +232,9 @@ function resetGame() {
     bg.lineTo(gameWidth, y*BLOCKSIZE);
   };
 
+  // sounds
+ tetrominoCayendo = game.add.audio('GainCoins');
+
   // input
   cursors = game.input.keyboard.createCursorKeys();
   keyRotate = game.input.keyboard.addKey(Phaser.Keyboard.UP);
@@ -244,6 +255,7 @@ function resetGame() {
 function fall() {
   if (gameOverState) return;
   if (tetromino.canMove(tetromino.slide.bind(tetromino),'down')) {
+    tetrominoCayendo.play();
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
   }
   else lockTetromino();
@@ -252,7 +264,9 @@ function fall() {
 // Crea una nueva pieza en la parte superior; si colisiona al aparecer, termina la partida.
 function spawn() {
   let shape = Math.floor(Math.random() * N_BLOCK_TYPES);
-  let color = PIECE_COLOR;
+
+  
+  let color = PIECE_COLORS[shape];
 
   tetromino = new Tetromino(shape, color, theTetris);
 
