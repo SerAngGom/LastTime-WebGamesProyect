@@ -1,5 +1,5 @@
 // --- Config ---
-const BLOCKSIZE = 28;               // px
+const BLOCKSIZE = 56;               // px
 const NUMBLOCKS_X = 10;             // classic width
 const NUMBLOCKS_Y = 20;             // classic height
 const MOVEMENT_LAG = 85;            // ms (soft key repeat)
