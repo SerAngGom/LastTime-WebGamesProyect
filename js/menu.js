@@ -1,3 +1,5 @@
+// Splash menu
+
 let splashMenuState = {
   preload: loadSplashMenu,
   create:  createSplashMenu,
@@ -35,7 +37,17 @@ function updateSplashMenu(){
     }
 };
 
+// Level menu
+
 let levelMenuState = {
   create: createLevelMenu,
   update: updateLevelMenu
+};
+
+function createLevelMenu(){
+  
+};
+
+function updateLevelMenu(){
+  
 };
