@@ -198,6 +198,9 @@ let shade, centerText;
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
 function resetGame() {
+
+  // AÑADIR let config = game.cache.getJSON('levelConfig') [window.currentSelectedLevel]; 
+
   // clear all blocks
   game.world.removeAll();
 
