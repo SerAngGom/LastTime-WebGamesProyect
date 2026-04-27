@@ -9,7 +9,7 @@ let splashMenuState = {
 let enterKey;
 
 function loadSplashMenu(){
-  game.load.image('splash', 'imgs/splash.png');
+  game.load.image('splash', 'assets/images/splash.png');
 };
 
 function createSplashMenu(){
