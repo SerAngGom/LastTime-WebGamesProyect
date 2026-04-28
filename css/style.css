@@ -18,7 +18,7 @@ body {
   box-sizing: border-box;
 }
 
-.panel-left{
+#score{
   margin-right: 115px;
   text-align: right;   
   min-width: 120px;

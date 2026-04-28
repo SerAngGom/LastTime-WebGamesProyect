@@ -261,6 +261,8 @@ function resetGame() {
 
   keyStop.onDown.add(stopMenu, this);
 
+  score = 0;
+
   // timer
   // IMPORTANTE: si venimos de un game over, el Timer andará pausado.
   // Hay que reanudarlo explícitamente, o la caída se queda a 0 (no cae nunca).
@@ -438,7 +440,10 @@ function checkLines(candidateLines) {
     let y = candidateLines[i];
     if (lineSum(y) == (NUMBLOCKS_X * OCCUPIED)) {
       collapsed.push(y);
-      cleanLine(y);
+      cleanLine(y); 
+      score += 20;
+      let scoreDOM =document.getElementById('score');
+      scoreDOM.innerHTML = `Score: ${score}`;
     }
   }
   if (collapsed.length)
