@@ -78,7 +78,7 @@ class Tetromino {
     return g;
   }
 
-  create(c_x, c_y) {
+  create(c_x, c_y, isPreview = false) { //Preview en false por defecto, solo se pone en true cuando necesites
     this.center = [c_x, c_y];
 
     let conflict = false;
@@ -92,14 +92,24 @@ class Tetromino {
 
       this.blocks.push(b);
       this.cells.push([x,y]);
-  
-      if (!this.tetris.validateCoordinates(x,y)) {
-        conflict = true;
-      } else {
-        this.tetris.scene[x][y] = FALLING;
+      if(!isPreview){
+        if (!this.tetris.validateCoordinates(x,y)) {
+          conflict = true;
+        } else {
+          this.tetris.scene[x][y] = FALLING;
+        }
       }
     }
     return conflict;
+  }
+
+  //Destruye un tetrómino (Necesario para la preview)
+  destroyGraphics() {
+    for (let i = 0; i < this.blocks.length; i++) {
+        this.blocks[i].destroy(); 
+    }
+    this.blocks = [];
+    this.cells = [];
   }
 
   // Verifica si la pieza puede moverse/rotar sin salirse del tablero ni chocar con bloques ocupados.
@@ -188,7 +198,7 @@ let move_offsets = {
 };
 
 // Elements for the game
-let tetromino, theTetris;
+let tetromino, nextTetromino, theTetris;
 let cursors, keyRotate, keyRestart;
 let gameOverState = false;
 
@@ -268,18 +278,54 @@ function fall() {
   else lockTetromino();
 };
 
+
+function drawNextTetromino(){
+
+  //Borra el tetromino si ya está dibujado(Para evitar sobrecargas en memoria)
+  if(nextTetromino.blocks.length > 0){
+      nextTetromino.destroyGraphics();
+  }
+
+  let previewX = (NUMBLOCKS_X/2) + 2; 
+  let previewY = 2;
+
+  //Crea un nuevo tetromino con preview = true, por lo que no caerá
+  nextTetromino.create(previewX, previewY, true);
+
+}
+  
+
 // Crea una nueva pieza en la parte superior; si colisiona al aparecer, termina la partida.
 function spawn() {
+
+  if(!nextTetromino){ //Si no hay tetrómino siguiente, inicializamos uno
+
   let shape = Math.floor(Math.random() * N_BLOCK_TYPES);
   let color = PIECE_COLORS[shape];
 
-  tetromino = new Tetromino(shape, color, theTetris);
+  nextTetromino = new Tetromino(shape, color, theTetris);
+  } 
 
+  nextTetromino.destroyGraphics(); //Borras el gráfico de preview actual
+
+  tetromino = nextTetromino; //El nuevo tetrómino será el siguiente
+
+  
   let start_x = Math.floor(NUMBLOCKS_X/2);
   let start_y = y_start[tetromino.shape];
   let conflict = tetromino.create(start_x, start_y);
   if (conflict) setGameOver(true);
+
+  //Creamos el nuevo tetrómino siguiente
+  let nextShape = Math.floor(Math.random() * N_BLOCK_TYPES); 
+  let nextColor = PIECE_COLORS[nextShape];
+
+  nextTetromino = new Tetromino(nextShape, nextColor, theTetris);
+
+  drawNextTetromino();
 };
+
+
 
 // Activa el estado de fin de partida y muestra un mensaje de reinicio.
 function setGameOver(on){
