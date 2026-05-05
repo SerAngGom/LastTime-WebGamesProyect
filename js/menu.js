@@ -36,6 +36,7 @@ function createSplashMenu(){
         font: '18px Arial',
         fill: '#ffffff',
         align: 'center',
+        lineSpacing: 10
       }
     );
     creditsText.anchor.set(0.5);
@@ -64,11 +65,11 @@ function createLevelMenu(){
   selectedLevel = 0;
   levelTexts = [];
 
-  const levels = ['Nivel 1', 'Nivel 2', 'Nivel 3'];
+  const levels = ['ivel 1', 'Nivel 2', 'Nivel 3'];
   const style = { font: 'bold 32px system-ui, Arial', fill: '#ffffff' };
 
   for(let i = 0; i < levels.length; i++){
-    let txt = game.add.text(game.world.centerX, game.world.centerY - 80 + (i * 60), levels[i], style); // -80 y +60 offset test NÚMEROS MÁGICOS
+    let txt = game.add.text(game.world.centerX, game.world.centerY - 80 + (i * 60), levels[i], style);
     txt.anchor.set(0.5);
     levelTexts.push(txt);
   }
