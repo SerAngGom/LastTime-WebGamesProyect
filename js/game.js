@@ -17,7 +17,7 @@ const EMPTY = 0;
 const FALLING = 1;
 const OCCUPIED = 2;
 
-let score = 0;
+
 
 class Tetris {
   constructor() {
@@ -201,13 +201,17 @@ let move_offsets = {
 
 // Elements for the game
 let tetromino, nextTetromino, theTetris;
-let cursors, keyRotate, keyRestart;
+let cursors, keyRotate, keyRestart, keyStop;
 let gameOverState = false;
 
 let timer, loop;
 let currentMovementTimer = 0;
 let shade, centerText;
 let tetrominoCayendoSFX;
+
+let isPaused=false;
+
+let score = 0;
 
 // Cargar assets
 function preLoad(){
@@ -263,6 +267,10 @@ function resetGame() {
   cursors = game.input.keyboard.createCursorKeys();
   keyRotate = game.input.keyboard.addKey(Phaser.Keyboard.UP);
   keyRestart = game.input.keyboard.addKey(Phaser.Keyboard.R);
+
+  keyStop = game.input.keyboard.addKey(Phaser.Keyboard.P);
+
+  keyStop.onDown.add(stopMenu, this);
 
   // timer
   // IMPORTANTE: si venimos de un game over, el Timer andará pausado.
@@ -377,8 +385,33 @@ function makeShade(alpha){
   shade.endFill();
 };
 
+function stopMenu(){
+
+  if (!game.paused) {
+    makeShade(0.5);
+    centerText = game.add.text(game.world.centerX, game.world.centerY,
+      'PAUSED\n\nPress P to continue', {
+        font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
+        fill: '#ffffff',
+        align: 'center'
+      }
+    );
+    centerText.anchor.set(0.5);
+    //Añadir game over
+  } else {
+    shade.destroy();
+    centerText.destroy();
+  }
+    game.paused = !game.paused;
+}
+
+
 // Bucle de actualización para leer input y mover la pieza
 function updateGame() {
+
+  if(keyStop.isDown){
+    stopMenu();
+  }
   currentMovementTimer += this.time.elapsed;
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
