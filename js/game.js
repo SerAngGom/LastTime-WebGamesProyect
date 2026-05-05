@@ -17,6 +17,8 @@ const EMPTY = 0;
 const FALLING = 1;
 const OCCUPIED = 2;
 
+let score = 0;
+
 class Tetris {
   constructor() {
     this.scene = [];
@@ -212,7 +214,9 @@ function preLoad(){
   //loading wav assets
   game.load.audio('test_sound', 'assets/sounds/flick.wav');
   // Load level config
-  game.load.json('levelConfig', '../level_config.json');
+  game.load.json('level1', '../level_1.json');
+  game.load.json('level2', '../level_2.json');
+  game.load.json('level3', '../level_3.json');
 }
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
@@ -221,7 +225,7 @@ function resetGame() {
   game.world.removeAll();
 
   // Level config
-  let levelConfig = game.cache.getJSON('levelConfig') [window.currentSelectedLevel];
+  let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
 
   // Init level variables --
   linesCompleted = 0;
@@ -439,7 +443,7 @@ function checkLines(candidateLines) {
 
 // Objetivos de victoria de cada nivel
 function checkLevelGoal() {
-  let cfg = game.cache.getJSON('levelConfig')[window.currentSelectedLevel];
+  let cfg = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
 
   // NIVEL 1: Objetivo por puntuación
   if (cfg.goal === "reachScore") {
@@ -448,13 +452,15 @@ function checkLevelGoal() {
     }
   }
 
-  // NIVEL 2: Velocidad dinámica (se hará luego)
+  // NIVEL 2: Velocidad dinámica (solo cambia velocidad, no termina)
   if (cfg.goal === "maxScoreWithSpeedUp") {
-    // Este nivel no tiene final automático, solo termina al morir
-    // Aquí no hacemos nada todavía
+    // Aquí luego añadiremos la subida de velocidad
   }
 
   // NIVEL 3: límite de tiempo (lo haremos luego)
+  if (cfg.goal === "maxScoreInTime") {
+    // Aquí luego añadiremos el temporizador
+  }
 }
 
 // Suma el estado de una fila para detectar si está completamente ocupada.

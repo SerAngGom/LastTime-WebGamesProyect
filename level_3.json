@@ -1,5 +1,7 @@
 {
-    "settings": { 
-        "speed": 200 
-    }
+    "settings": {
+    "speed": 600,
+    "goal": "maxScoreInTime",
+    "timeLimit": 60
+  }
 }

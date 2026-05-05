@@ -1,5 +1,8 @@
 {
-    "settings": { 
-        "speed": 400 
-    }
+    "settings": {
+    "speed": 600,
+    "goal": "maxScoreWithSpeedUp",
+    "dynamicSpeed": true,
+    "speedIncreaseEvery": 10
+  }
 }
