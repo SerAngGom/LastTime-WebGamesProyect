@@ -237,6 +237,7 @@ function resetGame() {
 
   // initialisation
   gameOverState = false;
+  nextTetromino = null;
   currentMovementTimer = 0;
 
   // Create Trellis and initialisation of its grid
@@ -382,11 +383,21 @@ function updateGame() {
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
   if (gameOverState) {
-    if (keyRestart.isDown)
-      resetGame();
-    currentMovementTimer = 0;
-    return;
-  };
+    if (cursors.up.justDown || cursors.down.justDown) {
+        gameOverSelection = (gameOverSelection === 0) ? 1 : 0;
+        updateGameOverUI();
+    }
+
+    // Usar enterKey en lugar de crear un objeto nuevo cada vez
+    if (enterKey.justDown) { 
+        if (gameOverSelection === 0) {
+            resetGame(); 
+        } else {
+            game.state.start('LevelMenu'); 
+        }
+    }
+    return; 
+  }
 
   if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
