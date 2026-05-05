@@ -1,0 +1,28 @@
+{
+  "1":
+  {
+    "speed": 600,
+    "goal": "Clear 5 lines",
+    "linesRequired": 5,
+    "timeLimit": null,
+    "allowedPieces": [0,1,2,3,4,5,6]
+  },
+
+  "2":
+  {
+    "speed": 500,
+    "goal": "Clear 10 lines",
+    "linesRequired": 10,
+    "timeLimit": 60,
+    "allowedPieces": [0,1,2,3,4,5,6]
+  },
+
+  "3":
+  {
+    "speed": 450,
+    "goal": "Score 300 points",
+    "scoreRequired": 300,
+    "timeLimit": null,
+    "allowedPieces": [0,1,2,3,4,5,6,7,8]
+  }
+}

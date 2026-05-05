@@ -199,12 +199,8 @@ let move_offsets = {
 
 // Elements for the game
 let tetromino, nextTetromino, theTetris;
-let cursors, keyRotate, keyRestart, keyStop;
+let cursors, keyRotate, keyRestart;
 let gameOverState = false;
-let isPaused=false;
-
-let score = 0;
-
 
 let timer, loop;
 let currentMovementTimer = 0;
@@ -216,7 +212,7 @@ function preLoad(){
   //loading wav assets
   game.load.audio('test_sound', 'assets/sounds/flick.wav');
   // Load level config
-  game.load.json('levelConfig', `../level_${window.currentSelectedLevel}.json`);
+  game.load.json('levelConfig', '../level_config.json');
 }
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
@@ -225,7 +221,12 @@ function resetGame() {
   game.world.removeAll();
 
   // Level config
-  let levelConfig = game.cache.getJSON('levelConfig'); 
+  let levelConfig = game.cache.getJSON('levelConfig') [window.currentSelectedLevel];
+
+  // Init level variables --
+  linesCompleted = 0;
+  levelStartTime = game.time.now;
+  speedIncreaseCounter = 0;
 
   // Add sound effects
   tetrominoCayendoSFX = game.add.audio('test_sound');
@@ -257,11 +258,6 @@ function resetGame() {
   cursors = game.input.keyboard.createCursorKeys();
   keyRotate = game.input.keyboard.addKey(Phaser.Keyboard.UP);
   keyRestart = game.input.keyboard.addKey(Phaser.Keyboard.R);
-  keyStop = game.input.keyboard.addKey(Phaser.Keyboard.P);
-
-  keyStop.onDown.add(stopMenu, this);
-
-  score = 0;
 
   // timer
   // IMPORTANTE: si venimos de un game over, el Timer andará pausado.
@@ -271,7 +267,7 @@ function resetGame() {
   timer.resume();
 
   // Cargar velocidad según level_config
-  let speed = levelConfig.settings.speed;
+  let speed = levelConfig ? levelConfig.speed : 600;
   loop = timer.loop(speed, fall, this);
 
   spawn();
@@ -294,15 +290,15 @@ function drawNextTetromino(){
   if(nextTetromino.blocks.length > 0){
       nextTetromino.destroyGraphics();
   }
-  //Cambiar el 2 a preview x
-  let previewX = (NUMBLOCKS_X/2) + 2;   
+
+  let previewX = (NUMBLOCKS_X/2) + 2;
   let previewY = 2;
 
   //Crea un nuevo tetromino con preview = true, por lo que no caerá
   nextTetromino.create(previewX, previewY, true);
 
 }
-  
+
 
 // Crea una nueva pieza en la parte superior; si colisiona al aparecer, termina la partida.
 function spawn() {
@@ -313,20 +309,20 @@ function spawn() {
   let color = PIECE_COLORS[shape];
 
   nextTetromino = new Tetromino(shape, color, theTetris);
-  } 
+  }
 
   nextTetromino.destroyGraphics(); //Borras el gráfico de preview actual
 
   tetromino = nextTetromino; //El nuevo tetrómino será el siguiente
 
-  
+
   let start_x = Math.floor(NUMBLOCKS_X/2);
   let start_y = y_start[tetromino.shape];
   let conflict = tetromino.create(start_x, start_y);
   if (conflict) setGameOver(true);
 
   //Creamos el nuevo tetrómino siguiente
-  let nextShape = Math.floor(Math.random() * N_BLOCK_TYPES); 
+  let nextShape = Math.floor(Math.random() * N_BLOCK_TYPES);
   let nextColor = PIECE_COLORS[nextShape];
 
   nextTetromino = new Tetromino(nextShape, nextColor, theTetris);
@@ -353,6 +349,34 @@ function setGameOver(on){
   }
 };
 
+function levelComplete() {
+  timer.pause();
+
+  levelEndTime = game.time.now;
+  let totalSeconds = Math.floor((levelEndTime - levelStartTime) / 1000);
+
+  makeShade(0.65);
+
+  centerText = game.add.text(
+    game.world.centerX,
+    game.world.centerY,
+    `LEVEL COMPLETE\n\nTime: ${totalSeconds}s\n\nPress ENTER`,
+    {
+      font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
+      fill: '#ffffff',
+      align: 'center'
+    }
+  );
+  centerText.anchor.set(0.5);
+
+  let enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+  enter.onDown.add(() => {
+    game.state.start('LevelMenu');
+  });
+}
+
+
+
 // Dibuja un velo oscuro encima del tablero para estados como 'game over'.
 function makeShade(alpha){
   shade = game.add.graphics(0,0);
@@ -361,35 +385,8 @@ function makeShade(alpha){
   shade.endFill();
 };
 
-function stopMenu(){
-  
-  if (!game.paused) {
-    makeShade(0.5); 
-    centerText = game.add.text(game.world.centerX, game.world.centerY,
-      'PAUSED\n\nPress P to continue', {
-        font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
-        fill: '#ffffff',
-        align: 'center'
-      }
-    );
-    centerText.anchor.set(0.5);
-    //Añadir game over
-  } else {
-    shade.destroy();
-    centerText.destroy();
-  }
-    game.paused = !game.paused;
-}
-
 // Bucle de actualización para leer input y mover la pieza
 function updateGame() {
-  
-  if(keyStop.isDown){ 
-    stopMenu();
-  }
-
-  
-
   currentMovementTimer += this.time.elapsed;
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
@@ -413,7 +410,6 @@ function updateGame() {
   };
 
   currentMovementTimer = 0;
-  
 };
 
 // Fija la pieza actual en el tablero, comprueba líneas completas y genera la siguiente.
@@ -440,20 +436,44 @@ function checkLines(candidateLines) {
     let y = candidateLines[i];
     if (lineSum(y) == (NUMBLOCKS_X * OCCUPIED)) {
       collapsed.push(y);
-      cleanLine(y); 
+      cleanLine(y);
+      // SUMAR PUNTOS
       score += 20;
-      let scoreDOM =document.getElementById('score');
+      let scoreDOM = document.getElementById('score');
       scoreDOM.innerHTML = `Score: ${score}`;
+
+      // COMPROBAR OBJETIVO DEL NIVEL
+      checkLevelGoal();
     }
   }
   if (collapsed.length)
     collapse(collapsed);
 };
 
+// Objetivos de victoria de cada nivel
+function checkLevelGoal() {
+  let cfg = game.cache.getJSON('levelConfig')[window.currentSelectedLevel];
+
+  // NIVEL 1: Objetivo por puntuación
+  if (cfg.goal === "reachScore") {
+    if (score >= cfg.scoreRequired) {
+      levelComplete();
+    }
+  }
+
+  // NIVEL 2: Velocidad dinámica (se hará luego)
+  if (cfg.goal === "maxScoreWithSpeedUp") {
+    // Este nivel no tiene final automático, solo termina al morir
+    // Aquí no hacemos nada todavía
+  }
+
+  // NIVEL 3: límite de tiempo (lo haremos luego)
+}
+
 // Suma el estado de una fila para detectar si está completamente ocupada.
 function lineSum(y) {
   let s = 0;
-  for (let x = 0; x < NUMBLOCKS_X; x++) 
+  for (let x = 0; x < NUMBLOCKS_X; x++)
     s += theTetris.scene[x][y];
   return s;
 };
