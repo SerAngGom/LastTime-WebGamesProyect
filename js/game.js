@@ -333,49 +333,36 @@ function spawn() {
 
 
 // Activa el estado de fin de partida y muestra un mensaje de reinicio.
-function setGameOver(on){
-  gameOverState = on;
-  if (gameOverState) {
-    timer.pause();
-    makeShade(0.65);
-    centerText = game.add.text(game.world.centerX, game.world.centerY,
-      'GAME OVER\n\nPress R to restart', {
-        font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
-        fill: '#ffffff',
-        align: 'center'
-      }
-    );
-    centerText.anchor.set(0.5);
-  }
-};
+function setGameOver(on) {
+    gameOverState = on;
+    if (gameOverState) {
+        timer.pause();
+        makeShade(0.75);
+        gameOverSelection = 0;
+        gameOverTexts = [];
 
-function levelComplete() {
-  timer.pause();
+        let title = game.add.text(game.world.centerX, game.world.centerY - 100, 'GAME OVER', 
+            { font: 'bold 40px Arial', fill: '#ff0000' });
+        title.anchor.set(0.5);
 
-  levelEndTime = game.time.now;
-  let totalSeconds = Math.floor((levelEndTime - levelStartTime) / 1000);
+        const options = ['Reiniciar Nivel', 'Volver al Menu'];
+        options.forEach((opt, i) => {
+            let txt = game.add.text(game.world.centerX, game.world.centerY + (i * 60), opt, 
+                { font: 'bold 28px Arial', fill: '#ffffff' });
+            txt.anchor.set(0.5);
+            gameOverTexts.push(txt);
+        });
 
-  makeShade(0.65);
-
-  centerText = game.add.text(
-    game.world.centerX,
-    game.world.centerY,
-    `LEVEL COMPLETE\n\nTime: ${totalSeconds}s\n\nPress ENTER`,
-    {
-      font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
-      fill: '#ffffff',
-      align: 'center'
+        updateGameOverUI();
     }
-  );
-  centerText.anchor.set(0.5);
-
-  let enter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-  enter.onDown.add(() => {
-    game.state.start('LevelMenu');
-  });
 }
 
-
+function updateGameOverUI() {
+    gameOverTexts.forEach((txt, i) => {
+        txt.fill = (i === gameOverSelection) ? "#444444" : "#ffffff";
+        txt.text = (i === gameOverSelection) ? `> ${txt.text.replace(/> | </g, '')} <` : txt.text.replace(/> | </g, '');
+    });
+}
 
 // Dibuja un velo oscuro encima del tablero para estados como 'game over'.
 function makeShade(alpha){
