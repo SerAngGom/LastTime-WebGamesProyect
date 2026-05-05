@@ -213,6 +213,8 @@ let isPaused=false;
 
 let score = 0;
 
+let playerName = "";
+
 // Cargar assets
 function preLoad(){
   //loading wav assets
@@ -222,6 +224,12 @@ function preLoad(){
   game.load.json('level2', '../level_2.json');
   game.load.json('level3', '../level_3.json');
 }
+
+//Añadir nombre al inicio
+document.addEventListener("input", () => {
+  let input = document.getElementById("playerName");
+  if (input) playerName = input.value;
+});
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
 function resetGame() {
