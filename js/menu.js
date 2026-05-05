@@ -17,16 +17,29 @@ function createSplashMenu(){
     bg.width = game.width;
     bg.height = game.height;
 
-    let text = game.add.text(
+    let startText = game.add.text(
       game.world.centerX,
-      game.world.centerY - 80, // -80 offset test
+      game.world.centerY - 80, // -80 offset test NÚMERO MÁGICO
       'Press ENTER to START',
       {
         font: 'bold 32px system-ui, Arial',
         fill: '#ffffff'
       }
     );
-    text.anchor.set(0.5);
+    startText.anchor.set(0.5);
+
+    let creditsText = game.add.text(
+      game.world.centerX,
+      game.height - 40, // -100 offset test NÚMERO MÁGICO
+      'Francisco Campra Bautista\nSergio Angulo Gómez\nÁlvaro Ramos Marco',
+      {
+        font: '18px Arial',
+        fill: '#ffffff',
+        align: 'center',
+        lineSpacing: 10
+      }
+    );
+    creditsText.anchor.set(0.5);
 
     enterKey = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
 };
