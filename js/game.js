@@ -232,6 +232,7 @@ function resetGame() {
 
   // initialisation
   gameOverState = false;
+  nextTetromino = null;
   currentMovementTimer = 0;
 
   // Create Trellis and initialisation of its grid
@@ -337,21 +338,36 @@ function spawn() {
 
 
 // Activa el estado de fin de partida y muestra un mensaje de reinicio.
-function setGameOver(on){
-  gameOverState = on;
-  if (gameOverState) {
-    timer.pause();
-    makeShade(0.65);
-    centerText = game.add.text(game.world.centerX, game.world.centerY,
-      'GAME OVER\n\nPress R to restart', {
-        font: 'bold 32px system-ui, -apple-system, Segoe UI, Roboto, Arial',
-        fill: '#ffffff',
-        align: 'center'
-      }
-    );
-    centerText.anchor.set(0.5);
-  }
-};
+function setGameOver(on) {
+    gameOverState = on;
+    if (gameOverState) {
+        timer.pause();
+        makeShade(0.75);
+        gameOverSelection = 0;
+        gameOverTexts = [];
+
+        let title = game.add.text(game.world.centerX, game.world.centerY - 100, 'GAME OVER', 
+            { font: 'bold 40px Arial', fill: '#ff0000' });
+        title.anchor.set(0.5);
+
+        const options = ['Reiniciar Nivel', 'Volver al Menu'];
+        options.forEach((opt, i) => {
+            let txt = game.add.text(game.world.centerX, game.world.centerY + (i * 60), opt, 
+                { font: 'bold 28px Arial', fill: '#ffffff' });
+            txt.anchor.set(0.5);
+            gameOverTexts.push(txt);
+        });
+
+        updateGameOverUI();
+    }
+}
+
+function updateGameOverUI() {
+    gameOverTexts.forEach((txt, i) => {
+        txt.fill = (i === gameOverSelection) ? "#444444" : "#ffffff";
+        txt.text = (i === gameOverSelection) ? `> ${txt.text.replace(/> | </g, '')} <` : txt.text.replace(/> | </g, '');
+    });
+}
 
 // Dibuja un velo oscuro encima del tablero para estados como 'game over'.
 function makeShade(alpha){
@@ -394,11 +410,20 @@ function updateGame() {
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
   if (gameOverState) {
-    if (keyRestart.isDown)
-      resetGame();
-    currentMovementTimer = 0;
-    return;
-  };
+        if (cursors.up.justDown || cursors.down.justDown) {
+            gameOverSelection = (gameOverSelection === 0) ? 1 : 0;
+            updateGameOverUI();
+        }
+
+        if (game.input.keyboard.addKey(Phaser.Keyboard.ENTER).justDown) {
+            if (gameOverSelection === 0) {
+                resetGame(); 
+            } else {
+                game.state.start('LevelMenu'); 
+            }
+        }
+        return; 
+  }
 
   if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
