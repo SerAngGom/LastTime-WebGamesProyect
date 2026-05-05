@@ -216,7 +216,7 @@ function preLoad(){
   //loading wav assets
   game.load.audio('test_sound', 'assets/sounds/flick.wav');
   // Load level config
-  game.load.json('levelConfig', '../level_config.json');
+  game.load.json('levelConfig', `../level_${window.currentSelectedLevel}.json`);
 }
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
@@ -225,7 +225,7 @@ function resetGame() {
   game.world.removeAll();
 
   // Level config
-  let levelConfig = game.cache.getJSON('levelConfig') [window.currentSelectedLevel]; 
+  let levelConfig = game.cache.getJSON('levelConfig'); 
 
   // Add sound effects
   tetrominoCayendoSFX = game.add.audio('test_sound');
@@ -271,7 +271,7 @@ function resetGame() {
   timer.resume();
 
   // Cargar velocidad según level_config
-  let speed = levelConfig ? levelConfig.speed : 600;
+  let speed = levelConfig.settings.speed;
   loop = timer.loop(speed, fall, this);
 
   spawn();
