@@ -275,7 +275,7 @@ function resetGame() {
   cursors = game.input.keyboard.createCursorKeys();
   keyRotate = game.input.keyboard.addKey(Phaser.Keyboard.UP);
   keyRestart = game.input.keyboard.addKey(Phaser.Keyboard.R);
-
+  
   keyStop = game.input.keyboard.addKey(Phaser.Keyboard.P);
 
   keyStop.onDown.add(stopMenu, this);
@@ -366,7 +366,7 @@ function setGameOver(on) {
             { font: 'bold 40px Arial', fill: '#ff0000' });
         title.anchor.set(0.5);
 
-        const options = ['Reiniciar Nivel', 'Volver al Menu'];
+        const options = ['Reiniciar Nivel', 'Volver al Menu', 'Hall of fame'];
         options.forEach((opt, i) => {
             let txt = game.add.text(game.world.centerX, game.world.centerY + (i * 60), opt, 
                 { font: 'bold 28px Arial', fill: '#ffffff' });
@@ -424,21 +424,33 @@ function updateGame() {
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
   if (gameOverState) {
-    if (cursors.up.justDown || cursors.down.justDown) {
-        gameOverSelection = (gameOverSelection === 0) ? 1 : 0;
+    if (cursors.up.justDown) {
+      gameOverSelection = (gameOverSelection-1+3)%3;
         updateGameOverUI();
+    } else if(cursors.down.justDown){
+      gameOverSelection = (gameOverSelection+1)%3;
+      updateGameOverUI();
     }
 
     // Usar enterKey en lugar de crear un objeto nuevo cada vez
     if (enterKey.justDown) { 
-        if (gameOverSelection === 0) {
-            resetGame(); 
-        } else {
-            game.state.start('LevelMenu'); 
-        }
+       switch(gameOverSelection){
+        case 0: 
+          resetGame();
+          break;
+        case 1: 
+          game.state.start('LevelMenu');
+          break;
+        case 2: 
+          game.state.start('HofMenu');
+          break;
+        default:
+            break;
+       }
     }
     return; 
   }
+ 
 
   if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
