@@ -150,6 +150,90 @@ class Tetromino {
     return [c_x + nx, c_y + ny];
   }
 
+     //Comprobamos si se puede rotar en la nueva posición una vez desplazado el kick
+  canRotateAt(offsetX, offsetY, dir){
+    for(let i = 0; i < this.cells.length; i++){ //En cada celda del tetrómino
+      let nuevaCoordenada = this.rotate(i, dir); //le pasamos a una variable el valor de la celda si rotara
+      
+      //Le aplicamos a sus coordenadas x e y el offset del wallkick
+      let finalX = nuevaCoordenada[0] + offsetX; 
+      let finalY = nuevaCoordenada[1] + offsetY;
+
+      //Si no cabe aun así devolvemos false, si cabe devolvemos true
+      if(!this.tetris.validateCoordinates(finalX, finalY)){
+        return false;
+      }
+
+      //Comprueba si las celdas nuevas están ocupadas por otra pieza
+      if (this.tetris.scene[finalX][finalY] === OCCUPIED) {
+            return false;
+        }
+    }
+    return true;
+  }
+
+  //Probamos si de todos los posibles wall kick hay alguno que permita rotar la pieza
+  tryWallKick(dir){
+
+    /*Los offsets que provocaría cada kick, por orden son:
+
+    - Original (No se si es necesario)
+    - Un bloque a la izquierda
+    - Un bloque a la derecha
+    - Dos bloques a la izquierda (Para la I)
+    - Dos bloques a la derecha (Para la I)
+    - Un bloque hacia arriba (Rotación al chocar con el suelo)    
+    */
+
+    const kicks =[[0, 0], [-1, 0], [1,0],[-2,0], [2,0], [0,-1]];
+
+    for (let i = 0; i< kicks.length; i++){
+
+      //Comprueba si se puede rotar con las nuevas coordenadas x e y
+      //Si se puede hace el wall kick y devuelve true
+      //Si no devuelve false
+      if (this.canRotateAt(kicks[i][0], kicks[i][1], dir)){
+        this.doWallKick(kicks[i][0], kicks[i][1], dir);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  doWallKick(offsetX,offsetY,dir){
+
+    for(let i = 0; i<this.cells.length; i++){ 
+      let antiguaX = this.cells[i][0];
+      let antiguaY = this.cells[i][1];
+      if (this.tetris.scene[antiguaX][antiguaY] === FALLING) {
+            this.tetris.scene[antiguaX][antiguaY] = EMPTY;
+        }
+      //Borramos las celdas del tablero lógico
+      //SOLO si la celda está ocupada por una pieza en movimiento
+    }
+
+    //Movemos las coordenadas del centro de la pieza
+    this.center[0] += offsetX;
+    this.center[1] += offsetY;
+
+    for (let i = 0; i<this.cells.length; i++){
+      let nuevaCoordenada = this.rotate(i,dir); //rotamos todas las celdas
+
+      //No se si este trozo de código hacefalta
+      this.cells[i][0] = nuevaCoordenada[0];
+      this.cells[i][1] = nuevaCoordenada[1];
+      
+      //actualizamos la posición visual
+      this.blocks[i].x = nuevaCoordenada[0] * BLOCKSIZE;
+      this.blocks[i].y = nuevaCoordenada[1] * BLOCKSIZE;
+
+      //Marcamos la nueva posición de las celdas como "cayendo"
+      this.tetris.scene[nuevaCoordenada[0]][nuevaCoordenada[1]] = FALLING;
+
+    }
+  }
+
   // Aplica el movimiento/rotación: actualiza celdas, posiciones gráficas y el estado del tablero.
   move(coordFn, centerFn, dir) {
     for (let i = 0; i < this.cells.length; i++) {
@@ -459,9 +543,17 @@ function updateGame() {
   } else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
   } else if (keyRotate.isDown) {
+
+    if(tetromino.shape===3){
+       return;
+    }
+
     // O piece rotation is pointless, but harmless
-    if (tetromino.canMove(tetromino.rotate.bind(tetromino), 'clockwise'))
+    if (tetromino.canMove(tetromino.rotate.bind(tetromino), 'clockwise')){
       tetromino.move(tetromino.rotate.bind(tetromino), null, 'clockwise');
+    }else{
+      tetromino.tryWallKick('clockwise');
+    }
   };
 
   currentMovementTimer = 0;
