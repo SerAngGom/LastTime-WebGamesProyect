@@ -312,6 +312,7 @@ let tetrominoCayendoSFX;
 let isPaused=false;
 
 let score = 0;
+let linesCompleted = 0;
 
 let playerName = "";
 
@@ -340,6 +341,7 @@ function resetGame() {
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
 
   // Init level variables --
+  score = 0;
   linesCompleted = 0;
   levelStartTime = game.time.now;
   speedIncreaseCounter = 0;
@@ -625,8 +627,13 @@ function checkLines(candidateLines) {
       cleanLine(y);
       // SUMAR PUNTOS
       score += 20;
+      // SUMAR LÍNEAS
+      linesCompleted += 1;
+      
       let scoreDOM = document.getElementById('score');
       scoreDOM.innerHTML = `Score: ${score}`;
+      let linesDOM = document.getElementById('lines');
+      linesDOM.innerHTML = `Lines: ${linesCompleted}`;
 
       // COMPROBAR OBJETIVO DEL NIVEL
       checkLevelGoal();
