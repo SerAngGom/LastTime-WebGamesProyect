@@ -22,12 +22,21 @@ body {
   margin-right: 115px;
   text-align: right;   
   min-width: 120px;
+  font-family: 'Press Start 2P', cursive; /* Añadida Webfont */
+  font-size: 12px; /* Ajusta el tamaño porque esta fuente suele ser grande */
+  line-height: 2;
 }
 
 .panel-right{
-   margin-left: 250px;
+  margin-left: 250px;
   text-align: center;   
   min-width: 120px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+#nameValue:hover {
+  color: #FFFFFF;
+  text-decoration: underline;
 }
 
 #game {
