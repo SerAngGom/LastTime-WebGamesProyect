@@ -327,9 +327,20 @@ function preLoad(){
 }
 
 //Añadir nombre al inicio
-document.addEventListener("input", () => {
-  let input = document.getElementById("playerName");
-  if (input) playerName = input.value;
+document.addEventListener("DOMContentLoaded", () => {
+  let nameSpan = document.getElementById("nameValue");
+  playerName = "PlayerName";
+  nameSpan.innerText = playerName;
+  
+  // Al hacer clic en el nombre, sale el prompt
+  nameSpan.addEventListener("click", () => {
+    let newName = prompt("Introduce tu nombre:", playerName);
+    // Validar que el usuario no le dio a "Cancelar" (null) y que no dejó el texto vacío
+    if (newName !== null && newName.trim() !== "") {
+      playerName = newName.trim();
+      nameSpan.innerText = playerName;
+    }
+  });
 });
 
 // Reinicia estado, tablero, HUD, input y temporizador para empezar una partida limpia.
