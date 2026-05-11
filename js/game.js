@@ -17,6 +17,17 @@ const EMPTY = 0;
 const FALLING = 1;
 const OCCUPIED = 2;
 
+//Preview canvas values
+let previewCanvas = document.getElementById('previewCanvas');
+
+//Si hay Canvas guardamos su contexto en previewctx, si no guardamos null
+let previewCtx;
+
+if(previewCanvas){
+  previewCtx = previewCanvas.getContext('2d');
+} else {
+  previewCtx = null;
+}
 
 
 class Tetris {
@@ -201,18 +212,22 @@ class Tetromino {
     return false;
   }
 
-  doWallKick(offsetX,offsetY,dir){
-
+  clearCurrentTetromino(){
     for(let i = 0; i<this.cells.length; i++){ 
       let antiguaX = this.cells[i][0];
       let antiguaY = this.cells[i][1];
-      if (this.tetris.scene[antiguaX][antiguaY] === FALLING) {
+      if (this.tetris.scene[antiguaX] && this.tetris.scene[antiguaX][antiguaY] === FALLING) {
             this.tetris.scene[antiguaX][antiguaY] = EMPTY;
         }
       //Borramos las celdas del tablero lógico
       //SOLO si la celda está ocupada por una pieza en movimiento
     }
+  }
 
+  doWallKick(offsetX,offsetY,dir){
+
+    this.clearCurrentTetromino();
+    
     //Movemos las coordenadas del centro de la pieza
     this.center[0] += offsetX;
     this.center[1] += offsetY;
@@ -236,9 +251,10 @@ class Tetromino {
 
   // Aplica el movimiento/rotación: actualiza celdas, posiciones gráficas y el estado del tablero.
   move(coordFn, centerFn, dir) {
+    
+    this.clearCurrentTetromino();
+
     for (let i = 0; i < this.cells.length; i++) {
-      let ox = this.cells[i][0];
-      let oy = this.cells[i][1];
       let nc = coordFn(i, dir);
       let nx = nc[0];
       let ny = nc[1];
@@ -248,7 +264,7 @@ class Tetromino {
       this.blocks[i].x = nx * BLOCKSIZE;
       this.blocks[i].y = ny * BLOCKSIZE;
 
-      this.tetris.scene[ox][oy] = EMPTY;
+      
       this.tetris.scene[nx][ny] = FALLING;
     }
     if (centerFn) {
@@ -391,16 +407,38 @@ function fall() {
 
 function drawNextTetromino(){
 
-  //Borra el tetromino si ya está dibujado(Para evitar sobrecargas en memoria)
-  if(nextTetromino.blocks.length > 0){
-      nextTetromino.destroyGraphics();
+  if(!previewCtx) return;
+
+  //Limpiamos el canvas
+  previewCtx.clearRect(0,0,previewCanvas.width, previewCanvas.height);
+
+  const shape = nextTetromino.shape;
+  const color = nextTetromino.color;
+
+  //Con el número de shape sacamos los offsets (Necesario para dibujar)
+  const offsets = nextTetromino.offsets[shape]; 
+
+  //Pasar el color de formato Phaser (0xRRGGBB) a CSS (#RRGGBB)
+  const colorCSS = "#" + color.toString(16).padStart(6,'0')
+
+  //Configuramos valores de dibujado
+  previewCtx.fillStyle = colorCSS;
+  previewCtx.strokeStyle = "#111"  
+  previewCtx.lineWidth = 2;
+
+   //Offsets para centrar la pieza en pantalla
+  const offsetX = 1;
+  const offsetY = 1;
+
+  for (let i = 0; i<BLOCKS_PER_TETROMINO; i++){
+    let posicionX = (offsets[i][0]+ offsetX) * BLOCKSIZE;
+    let posicionY = (offsets[i][1]+ offsetY) * BLOCKSIZE
+
+    //Dibujar el cuadrado
+    previewCtx.fillRect(posicionX, posicionY, BLOCKSIZE, BLOCKSIZE);
+    //Dibujar el borde
+    previewCtx.strokeRect(posicionX, posicionY, BLOCKSIZE, BLOCKSIZE);
   }
-
-  let previewX = (NUMBLOCKS_X/2) + 2;
-  let previewY = 2;
-
-  //Crea un nuevo tetromino con preview = true, por lo que no caerá
-  nextTetromino.create(previewX, previewY, true);
 
 }
 
@@ -542,7 +580,7 @@ function updateGame() {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
   } else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
-  } else if (keyRotate.isDown) {
+  } else if (keyRotate.justDown) {
 
     if(tetromino.shape===3){
        return;
@@ -557,6 +595,7 @@ function updateGame() {
   };
 
   currentMovementTimer = 0;
+
 };
 
 // Fija la pieza actual en el tablero, comprueba líneas completas y genera la siguiente.
