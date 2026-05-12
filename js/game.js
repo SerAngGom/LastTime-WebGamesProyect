@@ -432,22 +432,33 @@ function resetGame() {
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
   let bgColor = levelConfig.gridColor
 
-  // Tiempo límite del nivel
-  if (levelConfig.timeLimit) {
-  timeLeft = levelConfig.timeLimit;
-
-  // Limpiar intervalos anteriores
-  if (timeInterval) clearInterval(timeInterval);
-
-  // Iniciar cuenta atrás
-  timeInterval = setInterval(() => {
-    timeLeft--;
+  // NIVEL 3 → CUENTA ATRÁS
+if (levelConfig.timeLimit) {
+    timeLeft = levelConfig.timeLimit;
     document.getElementById('timer').innerHTML = `Time: ${timeLeft}s`;
 
-    if (timeLeft <= 0) {
-      clearInterval(timeInterval);
-      setGameOver(true);
-    }
+    timeInterval = setInterval(() => {
+        if (!game.paused) {   // Se para en pausa
+            timeLeft--;
+            document.getElementById('timer').innerHTML = `Time: ${timeLeft}s`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timeInterval);
+                setGameOver(true);
+            }
+        }
+    }, 1000);
+}
+// NIVELES 1 Y 2 → CRONÓMETRO ASCENDENTE
+else {
+    timeElapsed = 0;
+    document.getElementById('timer').innerHTML = `Time: 0s`;
+
+    timeInterval = setInterval(() => {
+        if (!game.paused) {   // Se para en la pausa
+            timeElapsed++;
+            document.getElementById('timer').innerHTML = `Time: ${timeElapsed}s`;
+        }
     }, 1000);
   }
 
