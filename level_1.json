@@ -4,6 +4,7 @@
     "goal": "reachScore",
     "scoreRequired": 200,
     "allowedPieces": [0,1,2,3,4,5,6],
-    "gridColor": "0x0B1622"
+    "gridColor": "0x0B1622",
+    "hasHOF": false
   }
 }
