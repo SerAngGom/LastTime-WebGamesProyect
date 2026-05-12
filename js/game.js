@@ -389,6 +389,9 @@ let isPaused=false;
 let score = 0;
 let linesCompleted = 0;
 
+let timeLeft = null;
+let timeInterval = null;
+
 let isAnimating = false;
 
 let playerName = "";
@@ -428,6 +431,25 @@ function resetGame() {
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
   let bgColor = levelConfig.gridColor
+
+  // Tiempo límite del nivel
+  if (levelConfig.timeLimit) {
+  timeLeft = levelConfig.timeLimit;
+
+  // Limpiar intervalos anteriores
+  if (timeInterval) clearInterval(timeInterval);
+
+  // Iniciar cuenta atrás
+  timeInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').innerHTML = `Time: ${timeLeft}s`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timeInterval);
+      setGameOver(true);
+    }
+    }, 1000);
+  }
 
   // Init level variables --
   score = 0;
@@ -601,6 +623,7 @@ function spawn() {
 
 // Activa el estado de fin de partida y muestra un mensaje de reinicio.
 function setGameOver(on) {
+  if (timeInterval) clearInterval(timeInterval);
     gameOverState = on;
     if (gameOverState) {
         timer.pause();
@@ -826,7 +849,9 @@ function checkLevelGoal() {
 
   // NIVEL 3: límite de tiempo (lo haremos luego)
   if (cfg.goal === "maxScoreInTime") {
-    // Aquí luego añadiremos el temporizador
+    if (score >= cfg.scoreRequired) {
+        levelComplete();
+    }
   }
 }
 
