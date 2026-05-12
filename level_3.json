@@ -2,6 +2,7 @@
     "settings": {
     "speed": 600,
     "goal": "maxScoreInTime",
-    "timeLimit": 60
+    "timeLimit": 60,
+    "gridColor": "0x1A0F1F"
   }
 }

@@ -388,6 +388,7 @@ function resetGame() {
 
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
+  let bgColor = levelConfig.gridColor
 
   // Init level variables --
   score = 0;
@@ -409,7 +410,7 @@ function resetGame() {
 
   // subtle grid background
   bg = game.add.graphics(0,0);
-  bg.beginFill(0x0E0E0E, 1);
+  bg.beginFill(bgColor, 1);
   bg.drawRect(0,0,gameWidth,gameHeight);
   bg.endFill();
   bg.lineStyle(1, 0x1B1B1B, 1);

@@ -2,6 +2,7 @@
     "settings": {
     "speed": 600,
     "goal": "reachScore",
-    "scoreRequired": 200
+    "scoreRequired": 200,
+    "gridColor": "0x0B1622"
   }
 }

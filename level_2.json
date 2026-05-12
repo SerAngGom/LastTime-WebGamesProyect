@@ -3,6 +3,7 @@
     "speed": 600,
     "goal": "maxScoreWithSpeedUp",
     "dynamicSpeed": true,
-    "speedIncreaseEvery": 10
+    "speedIncreaseEvery": 10,
+    "gridColor": "0x121212"
   }
 }
