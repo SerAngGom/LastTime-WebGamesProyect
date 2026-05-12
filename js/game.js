@@ -79,11 +79,17 @@ class Tetromino {
       5 : [[-1,0],[0,0],[1,0],[0,1]],     // T
       6 : [[-1,-1],[0,-1],[0,0],[1,0]],    // Z
 
-      7 : [[0,-1],[-1,0],[0,0],[1,0]], //T invertida
-      8 : [[0,-1],[0,0],[1,0],[0,1]], // |-
-      9 : [[-1,-1],[0,0],[1,1],[2,1]], // L esc diagonal
-      10: [[-1,0],[0,0],[0,1],[1,1]] // Z
+      7 : [[-1,0], [0,0], [1,0], [0,-1]], //Cruz extra [0,1]
+      8 : [[0,-2], [0,-1], [0,0], [1,0]], // L Grande extra [2,0]
+      9 : [[-1,-1],[0,-1],[0,0],[1,0]], // Escalera extra [2,2]
+      10: [[-1,0],[0,0],[1,0],[-1,-1]] // U extra [1,-1]
     }
+    this.extraBlockOffsets = {
+      7: [0,1],     // Cruz
+      8: [2,0],     // L grande
+      9: [1,1],     // Escalera
+      10: [1,-1]    // U
+    };
   }
 
   // Dibuja el bloque mediante Graphics de Phaser (sin sprites), con un pequeño margen
@@ -120,6 +126,23 @@ class Tetromino {
         }
       }
     }
+    // --- BLOQUE EXTRA (5º BLOQUE) ---
+  let extra = this.extraBlockOffsets[this.shape];
+  if (extra) {
+    let x = c_x + extra[0];
+    let y = c_y + extra[1];
+
+    let b = this.renderBlock();
+    b.x = x * BLOCKSIZE;
+    b.y = y * BLOCKSIZE;
+
+    this.blocks.push(b);
+    this.cells.push([x,y]);
+
+    if (!isPreview) {
+        this.tetris.scene[x][y] = FALLING;
+    }
+  }
     return conflict;
   }
 
@@ -343,7 +366,7 @@ let bg;
 let gameWidth  = NUMBLOCKS_X * BLOCKSIZE;
 let gameHeight = NUMBLOCKS_Y * BLOCKSIZE;
 
-let y_start = { 0:1, 1:1, 2:0, 3:1, 4:1, 5:0, 6:1, 7:1, 8:1, 9:2, 10:1};
+let y_start = { 0:1, 1:1, 2:0, 3:1, 4:1, 5:0, 6:1, 7:1, 8:2, 9:2, 10:1};
 
 let move_offsets = {
   left:  [-1,0],
