@@ -203,27 +203,27 @@ class Tetromino {
       //Comprueba si se puede rotar con las nuevas coordenadas x e y
       //Si se puede hace el wall kick y devuelve true
       //Si no devuelve false
-      if (this.canRotateAt(kicks[i][0], kicks[i][1], dir)){
-        this.doWallKick(kicks[i][0], kicks[i][1], dir);
-        return true;
-      }
-    }
+      let offsetX = kicks[i][0];
+      let offsetY = kicks[i][1];
 
-    return false;
+    if (this.canRotateAt(offsetX, offsetY, dir)) {
+      this.doWallKick(offsetX, offsetY, dir);
+      return true;
+    }
+  }
+
+  return false;
   }
 
   clearCurrentTetromino(){
     for(let i = 0; i<this.cells.length; i++){ 
-      let antiguaX = kicks[i][0];
-      let antiguaY = kicks[i][1];
-      if (this.canRotateAt(offsetX, offsetY, dir)) {
-            this.doWallKick(offsetX, offsetY, dir);
-            return true;
-      //Borramos las celdas del tablero lógico
-      //SOLO si la celda está ocupada por una pieza en movimiento
+      let antiguaX = this.cells[i][0];
+      let antiguaY = this.cells[i][1];
+      if (this.tetris.scene[antiguaX] && this.tetris.scene[antiguaX][antiguaY] === FALLING) {
+      this.tetris.scene[antiguaX][antiguaY] = EMPTY;
     }
-    return false;
   }
+}
 
   doWallKick(offsetX,offsetY,dir){
 
@@ -236,16 +236,16 @@ class Tetromino {
     for (let i = 0; i<this.cells.length; i++){
       let nuevaCoordenada = this.rotate(i,dir); //rotamos todas las celdas
 
-      let newx = rotated[0] + offsetX;
-      let newy = rotated[1] + offsetY;
+      let newx = nuevaCoordenada[0] + offsetX;
+      let newy = nuevaCoordenada[1] + offsetY;
 
       //No se si este trozo de código hacefalta
       this.cells[i][0] = newx;
       this.cells[i][1] = newy;
-      
+
       //actualizamos la posición visual
-      this.blocks[i].x = newx[0] * BLOCKSIZE;
-      this.blocks[i].y = newy[1] * BLOCKSIZE;
+      this.blocks[i].x = newx * BLOCKSIZE;
+      this.blocks[i].y = newy * BLOCKSIZE;
 
       //Marcamos la nueva posición de las celdas como "cayendo"
       this.tetris.scene[newx][newy] = FALLING;
@@ -255,7 +255,7 @@ class Tetromino {
 
   // Aplica el movimiento/rotación: actualiza celdas, posiciones gráficas y el estado del tablero.
   move(coordFn, centerFn, dir) {
-    
+
     this.clearCurrentTetromino();
 
     for (let i = 0; i < this.cells.length; i++) {
@@ -268,7 +268,7 @@ class Tetromino {
       this.blocks[i].x = nx * BLOCKSIZE;
       this.blocks[i].y = ny * BLOCKSIZE;
 
-      
+
       this.tetris.scene[nx][ny] = FALLING;
     }
     if (centerFn) {
@@ -556,62 +556,67 @@ function stopMenu(){
 // Bucle de actualización para leer input y mover la pieza
 function updateGame() {
 
-  if(keyStop.isDown){
+  if (keyStop.isDown) {
     stopMenu();
   }
+
   currentMovementTimer += this.time.elapsed;
   if (currentMovementTimer <= MOVEMENT_LAG) return;
 
+  //Game Over
   if (gameOverState) {
+
     if (cursors.up.justDown) {
-      gameOverSelection = (gameOverSelection-1+3)%3;
-        updateGameOverUI();
-    } else if(cursors.down.justDown){
-      gameOverSelection = (gameOverSelection+1)%3;
+      gameOverSelection = (gameOverSelection - 1 + 3) % 3;
+      updateGameOverUI();
+    } 
+    else if (cursors.down.justDown) {
+      gameOverSelection = (gameOverSelection + 1) % 3;
       updateGameOverUI();
     }
 
-    // Usar enterKey en lugar de crear un objeto nuevo cada vez
-    if (enterKey.justDown) { 
-       switch(gameOverSelection){
-        case 0: 
-          resetGame();
-          break;
-        case 1: 
-          game.state.start('LevelMenu');
-          break;
-        case 2: 
-          game.state.start('HofMenu');
-          break;
-        default:
-            break;
-       }
+    if (enterKey.justDown) {
+      switch (gameOverSelection) {
+        case 0: resetGame(); break;
+        case 1: game.state.start('LevelMenu'); break;
+        case 2: game.state.start('HofMenu'); break;
+      }
     }
-    return; 
-  }
- 
 
+    return;
+  }
+
+  //Movement
   if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
-  } else if (cursors.right.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
+  }
+  else if (cursors.right.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
-  } else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
+  }
+  else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
     tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
-  } else if (keyRotate.justDown) {
+  }
+  else if (keyRotate.justDown) {
 
-    if(tetromino.shape===3){
-       return;
+    // La O no rota
+    if (tetromino.shape === 3) {
+      currentMovementTimer = 0;
+      return;
     }
 
-    // O piece rotation is pointless, but harmless
-    if (tetromino.canMove(tetromino.rotate.bind(tetromino), 'clockwise')){
+    // Rotación normal
+    if (tetromino.canMove(tetromino.rotate.bind(tetromino), 'clockwise')) {
       tetromino.move(tetromino.rotate.bind(tetromino), null, 'clockwise');
-    }else if (tetromino.tryWallKick('clockwise'));
-  };
+    }
+    // Wall kick
+    else {
+      tetromino.tryWallKick('clockwise');
+    }
+  }
 
   currentMovementTimer = 0;
+}
 
-};
 
 // Fija la pieza actual en el tablero, comprueba líneas completas y genera la siguiente.
 function lockTetromino() {
