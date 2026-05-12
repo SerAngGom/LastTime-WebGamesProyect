@@ -336,6 +336,8 @@ let isPaused=false;
 let score = 0;
 let linesCompleted = 0;
 
+let isAnimating = false;
+
 let playerName = "";
 
 // Cargar assets
@@ -372,6 +374,7 @@ function resetGame() {
 
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
+  let bgColor = levelConfig.gridColor
 
   // Init level variables --
   score = 0;
@@ -393,7 +396,7 @@ function resetGame() {
 
   // subtle grid background
   bg = game.add.graphics(0,0);
-  bg.beginFill(0x0E0E0E, 1);
+  bg.beginFill(bgColor, 1);
   bg.drawRect(0,0,gameWidth,gameHeight);
   bg.endFill();
   bg.lineStyle(1, 0x1B1B1B, 1);
@@ -583,6 +586,8 @@ function stopMenu(){
 // Bucle de actualización para leer input y mover la pieza
 function updateGame() {
 
+  if (isAnimating) return;
+
   if (keyStop.isDown) {
     stopMenu();
   }
@@ -664,29 +669,59 @@ function lockTetromino() {
 
 // Revisa las filas tocadas por la pieza recién fijada y aplica limpieza/colapso/puntuación.
 function checkLines(candidateLines) {
-  let collapsed = [];
+  let linesToClear = [];
+
   for (let i = 0; i < candidateLines.length; i++) {
     let y = candidateLines[i];
-    if (lineSum(y) == (NUMBLOCKS_X * OCCUPIED)) {
-      collapsed.push(y);
-      cleanLine(y);
-      // SUMAR PUNTOS
-      score += 20;
-      // SUMAR LÍNEAS
-      linesCompleted += 1;
-      
-      let scoreDOM = document.getElementById('score');
-      scoreDOM.innerHTML = `Score: ${score}`;
-      let linesDOM = document.getElementById('lines');
-      linesDOM.innerHTML = `Lines: ${linesCompleted}`;
-
-      // COMPROBAR OBJETIVO DEL NIVEL
-      checkLevelGoal();
+    if (lineSum(y) === (NUMBLOCKS_X * OCCUPIED)) {
+      linesToClear.push(y);
     }
   }
-  if (collapsed.length)
-    collapse(collapsed);
-};
+
+  if (linesToClear.length > 0) {
+    isAnimating = true; // Bloqueamos la entrada del usuario
+    loop.timer.pause(); // Pausamos la caída de piezas
+    
+    animateLineBlink(linesToClear, () => {
+      linesToClear.forEach(y => {
+        cleanLine(y);
+        score += 20;
+        linesCompleted += 1;
+      });
+
+      document.getElementById('score').innerHTML = `Score: ${score}`;
+      document.getElementById('lines').innerHTML = `Lines: ${linesCompleted}`;
+
+      collapse(linesToClear);
+      checkLevelGoal();
+      
+      isAnimating = false; // Desbloqueamos
+      loop.timer.resume(); // Reanudamos el tiempo justo donde estaba
+    });
+  }
+}
+
+function animateLineBlink(lines, onComplete) {
+  let lastTween = null;
+
+  lines.forEach(y => {
+    for (let x = 0; x < NUMBLOCKS_X; x++) {
+      let block = theTetris.sceneBlocks[x][y];
+      if (block) {
+        // Creamos un parpadeo: alfa 1 -> 0 -> 1 -> 0
+        lastTween = game.add.tween(block)
+          .to({ alpha: 0 }, 100, Phaser.Easing.Linear.None, true, 0, 2, true);
+      }
+    }
+  });
+
+  // Cuando el último parpadeo termine, llamamos al callback para borrar los bloques
+  if (lastTween) {
+    lastTween.onComplete.add(onComplete, this);
+  } else {
+    onComplete();
+  }
+}
 
 // Objetivos de victoria de cada nivel
 function checkLevelGoal() {
