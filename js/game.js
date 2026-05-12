@@ -214,14 +214,15 @@ class Tetromino {
 
   clearCurrentTetromino(){
     for(let i = 0; i<this.cells.length; i++){ 
-      let antiguaX = this.cells[i][0];
-      let antiguaY = this.cells[i][1];
-      if (this.tetris.scene[antiguaX] && this.tetris.scene[antiguaX][antiguaY] === FALLING) {
-            this.tetris.scene[antiguaX][antiguaY] = EMPTY;
-        }
+      let antiguaX = kicks[i][0];
+      let antiguaY = kicks[i][1];
+      if (this.canRotateAt(offsetX, offsetY, dir)) {
+            this.doWallKick(offsetX, offsetY, dir);
+            return true;
       //Borramos las celdas del tablero lógico
       //SOLO si la celda está ocupada por una pieza en movimiento
     }
+    return false;
   }
 
   doWallKick(offsetX,offsetY,dir){
@@ -235,16 +236,19 @@ class Tetromino {
     for (let i = 0; i<this.cells.length; i++){
       let nuevaCoordenada = this.rotate(i,dir); //rotamos todas las celdas
 
+      let newx = rotated[0] + offsetX;
+      let newy = rotated[1] + offsetY;
+
       //No se si este trozo de código hacefalta
-      this.cells[i][0] = nuevaCoordenada[0];
-      this.cells[i][1] = nuevaCoordenada[1];
+      this.cells[i][0] = newx;
+      this.cells[i][1] = newy;
       
       //actualizamos la posición visual
-      this.blocks[i].x = nuevaCoordenada[0] * BLOCKSIZE;
-      this.blocks[i].y = nuevaCoordenada[1] * BLOCKSIZE;
+      this.blocks[i].x = newx[0] * BLOCKSIZE;
+      this.blocks[i].y = newy[1] * BLOCKSIZE;
 
       //Marcamos la nueva posición de las celdas como "cayendo"
-      this.tetris.scene[nuevaCoordenada[0]][nuevaCoordenada[1]] = FALLING;
+      this.tetris.scene[newx][newy] = FALLING;
 
     }
   }
@@ -602,9 +606,7 @@ function updateGame() {
     // O piece rotation is pointless, but harmless
     if (tetromino.canMove(tetromino.rotate.bind(tetromino), 'clockwise')){
       tetromino.move(tetromino.rotate.bind(tetromino), null, 'clockwise');
-    }else{
-      tetromino.tryWallKick('clockwise');
-    }
+    }else if (tetromino.tryWallKick('clockwise'));
   };
 
   currentMovementTimer = 0;
