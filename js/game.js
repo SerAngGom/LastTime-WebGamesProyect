@@ -73,7 +73,7 @@ class Tetromino {
     this.offsets = {
       0 : [[0,-1],[0,0],[0,1],[1,1]],     // L
       1 : [[0,-1],[0,0],[0,1],[-1,1]],    // J
-      2 : [[-1,0],[0,0],[1,0],[2,0]],     // I
+      2 : [[-2,0],[-1,0],[0,0],[1,0]],     // I
       3 : [[-1,-1],[0,-1],[0,0],[-1,0]],  // O
       4 : [[-1,0],[0,0],[0,-1],[1,-1]],   // S
       5 : [[-1,0],[0,0],[1,0],[0,1]],     // T
@@ -225,7 +225,7 @@ class Tetromino {
     */
 
     const kicks =[[0, 0], [-1, 0], [1,0],[-2,0], [2,0], [0,-1]];
-    const kicks_I = [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]];
+    const kicks_I = [[0, 0], [-1, 0], [1, 0], [-2, 0], [2, 0], [3, 0], [0, -1]];
 
     let table;
 
@@ -266,29 +266,38 @@ class Tetromino {
 
   doWallKick(offsetX,offsetY,dir){
 
+    // 1. Borrar la pieza actual del tablero
     this.clearCurrentTetromino();
 
-    //Movemos las coordenadas del centro de la pieza
+    // 2. Rotar primero SIN mover el centro
+    let rotated = [];
+    for (let i = 0; i < this.cells.length; i++) {
+        let r = this.rotate(i, dir); // rotación pura
+        rotated.push([r[0], r[1]]);
+    }
+
+    // 3. Aplicar el offset del wall kick a TODAS las celdas
+    for (let i = 0; i < rotated.length; i++) {
+        rotated[i][0] += offsetX;
+        rotated[i][1] += offsetY;
+    }
+
+    // 4. Actualizar el centro DESPUÉS de aplicar el offset
     this.center[0] += offsetX;
     this.center[1] += offsetY;
 
-    for (let i = 0; i<this.cells.length; i++){
-      let nuevaCoordenada = this.rotate(i,dir); //rotamos todas las celdas
+    // 5. Guardar y dibujar
+    for (let i = 0; i < this.cells.length; i++) {
+        let nx = rotated[i][0];
+        let ny = rotated[i][1];
 
-      let newx = nuevaCoordenada[0];
-      let newy = nuevaCoordenada[1];
+        this.cells[i][0] = nx;
+        this.cells[i][1] = ny;
 
-      //No se si este trozo de código hacefalta
-      this.cells[i][0] = newx;
-      this.cells[i][1] = newy;
+        this.blocks[i].x = nx * BLOCKSIZE;
+        this.blocks[i].y = ny * BLOCKSIZE;
 
-      //actualizamos la posición visual
-      this.blocks[i].x = newx * BLOCKSIZE;
-      this.blocks[i].y = newy * BLOCKSIZE;
-
-      //Marcamos la nueva posición de las celdas como "cayendo"
-      this.tetris.scene[newx][newy] = FALLING;
-
+        this.tetris.scene[nx][ny] = FALLING;
     }
   }
 
