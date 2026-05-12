@@ -197,14 +197,25 @@ class Tetromino {
     */
 
     const kicks =[[0, 0], [-1, 0], [1,0],[-2,0], [2,0], [0,-1]];
+    const kicks_I = [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]];
 
-    for (let i = 0; i< kicks.length; i++){
+    let table;
+
+    if (this.shape === 2) {
+      // La pieza I usa sus propios wall kicks
+      table = kicks_I;
+    } else {
+    // El resto de piezas usan los wall kicks normales
+    table = kicks;
+    }
+
+    for (let i = 0; i< table.length; i++){
 
       //Comprueba si se puede rotar con las nuevas coordenadas x e y
       //Si se puede hace el wall kick y devuelve true
       //Si no devuelve false
-      let offsetX = kicks[i][0];
-      let offsetY = kicks[i][1];
+      let offsetX = table[i][0];
+      let offsetY = table[i][1];
 
     if (this.canRotateAt(offsetX, offsetY, dir)) {
       this.doWallKick(offsetX, offsetY, dir);
@@ -228,7 +239,7 @@ class Tetromino {
   doWallKick(offsetX,offsetY,dir){
 
     this.clearCurrentTetromino();
-    
+
     //Movemos las coordenadas del centro de la pieza
     this.center[0] += offsetX;
     this.center[1] += offsetY;
@@ -236,8 +247,8 @@ class Tetromino {
     for (let i = 0; i<this.cells.length; i++){
       let nuevaCoordenada = this.rotate(i,dir); //rotamos todas las celdas
 
-      let newx = nuevaCoordenada[0] + offsetX;
-      let newy = nuevaCoordenada[1] + offsetY;
+      let newx = nuevaCoordenada[0];
+      let newy = nuevaCoordenada[1];
 
       //No se si este trozo de código hacefalta
       this.cells[i][0] = newx;
