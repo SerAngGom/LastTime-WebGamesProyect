@@ -3,6 +3,7 @@
     "speed": 600,
     "goal": "maxScoreWithSpeedUp",
     "dynamicSpeed": true,
-    "speedIncreaseEvery": 10
+    "speedIncreaseEvery": 10,
+    "allowedPieces": [0,1,2,3,4,5,6,7,8]
   }
 }

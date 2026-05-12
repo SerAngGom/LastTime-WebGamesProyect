@@ -7,10 +7,12 @@ const INITIAL_FALL_DELAY = 600;     // ms
 
 // 7 tetrominoes, rotation around a center cell
 const BLOCKS_PER_TETROMINO = 4;
-const N_BLOCK_TYPES = 7;
+const N_BLOCK_TYPES = 11; // 7 originales + 4 añadidos por nosotros
 
 // Color de las piezas
-const PIECE_COLORS = [0xFF5733,  0x33FF57, 0x3357FF, 0xF333FF, 0xFFBD33, 0x33FFF3, 0x8D33FF];
+const PIECE_COLORS = [0xFF5733,  0x33FF57, 0x3357FF, 0xF333FF, 0xFFBD33, 0x33FFF3, 0x8D33FF,
+  0xFF66AA,  0x66AAFF, 0xAAFF66, 0xDD44FF //ültimos 4 colores de piezas nuevas
+];
 
 // Scene grid values
 const EMPTY = 0;
@@ -75,7 +77,12 @@ class Tetromino {
       3 : [[-1,-1],[0,-1],[0,0],[-1,0]],  // O
       4 : [[-1,0],[0,0],[0,-1],[1,-1]],   // S
       5 : [[-1,0],[0,0],[1,0],[0,1]],     // T
-      6 : [[-1,-1],[0,-1],[0,0],[1,0]]    // Z
+      6 : [[-1,-1],[0,-1],[0,0],[1,0]],    // Z
+
+      7 : [[0,-1],[-1,0],[0,0],[1,0]], //T invertida
+      8 : [[0,-1],[0,0],[1,0],[0,1]], // |-
+      9 : [[-1,-1],[0,0],[1,1],[2,1]], // L esc diagonal
+      10: [[-1,0],[0,0],[0,1],[1,1]] // Z
     }
   }
 
@@ -133,27 +140,6 @@ class Tetromino {
       if (!this.tetris.validateCoordinates(nc[0], nc[1])) return false;
     }
     return true;
-  }
-
-  // Animación de choque (bump)
-  bump(dir) {
-    const offset = 8; // Píxeles que se desplaza en el choque
-    const duration = 50; // Milisegundos que dura la ida
-    
-    let moveX = 0;
-    let moveY = 0;
-
-    if (dir === 'left') moveX = -offset;
-    if (dir === 'right') moveX = offset;
-    if (dir === 'down') moveY = offset;
-
-    this.blocks.forEach(block => {
-      // Si el bloque ya tiene un tween activo, no creamos otro para no acumularlos
-      if (game.tweens.isTweening(block)) return;
-
-      game.add.tween(block)
-        .to({ x: block.x + moveX, y: block.y + moveY }, duration, Phaser.Easing.Back.Out, true, 0, 0, true);
-    });
   }
 
   // Calcula la nueva coordenada de un bloque de la pieza al moverla en una dirección.
@@ -327,7 +313,7 @@ let bg;
 let gameWidth  = NUMBLOCKS_X * BLOCKSIZE;
 let gameHeight = NUMBLOCKS_Y * BLOCKSIZE;
 
-let y_start = { 0:1, 1:1, 2:0, 3:1, 4:1, 5:0, 6:1 };
+let y_start = { 0:1, 1:1, 2:0, 3:1, 4:1, 5:0, 6:1, 7:1, 8:1, 9:2, 10:1};
 
 let move_offsets = {
   left:  [-1,0],
@@ -497,7 +483,13 @@ function spawn() {
 
   if(!nextTetromino){ //Si no hay tetrómino siguiente, inicializamos uno
 
-  let shape = Math.floor(Math.random() * N_BLOCK_TYPES);
+  // Leemos la config del nivel actual
+  let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
+
+  // Si el JSON tiene allowedPieces, usamos eso; si no, usamos las 7 clásicas
+  let allowed = levelConfig.allowedPieces || [0,1,2,3,4,5,6];
+
+  let shape = allowed[Math.floor(Math.random() * allowed.length)];
   let color = PIECE_COLORS[shape];
 
   nextTetromino = new Tetromino(shape, color, theTetris);
@@ -514,7 +506,10 @@ function spawn() {
   if (conflict) setGameOver(true);
 
   //Creamos el nuevo tetrómino siguiente
-  let nextShape = Math.floor(Math.random() * N_BLOCK_TYPES);
+  let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
+  let allowed = levelConfig.allowedPieces || [0,1,2,3,4,5,6];
+
+  let nextShape = allowed[Math.floor(Math.random() * allowed.length)];
   let nextColor = PIECE_COLORS[nextShape];
 
   nextTetromino = new Tetromino(nextShape, nextColor, theTetris);
@@ -619,26 +614,14 @@ function updateGame() {
   }
 
   //Movement
-  if (cursors.left.isDown) {
-    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
-      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
-    } else if (cursors.left.justDown) { // Solo hace el "bump" al pulsar una vez, para no saturar
-      tetromino.bump('left');
-    }
+  if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
+    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
   }
-  else if (cursors.right.isDown) {
-    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
-      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
-    } else if (cursors.right.justDown) {
-      tetromino.bump('right');
-    }
+  else if (cursors.right.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
+    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
   }
-  else if (cursors.down.isDown) {
-    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
-      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
-    } else if (cursors.down.justDown) {
-      tetromino.bump('down');
-    }
+  else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
+    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
   }
   else if (keyRotate.justDown) {
 
