@@ -517,28 +517,42 @@ function drawNextTetromino(){
   previewCtx.strokeStyle = "#111"  
   previewCtx.lineWidth = 2;
 
-   //Offsets para centrar la pieza en pantalla
-  const offsetX = 1;
-  const offsetY = 1;
+   // Buscamos el mínimo X e Y de la pieza para centrarla
+  let minX = Infinity;
+  let minY = Infinity;
 
-  for (let i = 0; i<BLOCKS_PER_TETROMINO; i++){
-    let posicionX = (offsets[i][0]+ offsetX) * BLOCKSIZE;
-    let posicionY = (offsets[i][1]+ offsetY) * BLOCKSIZE
-
-    //Dibujar el cuadrado
-    previewCtx.fillRect(posicionX, posicionY, BLOCKSIZE, BLOCKSIZE);
-    //Dibujar el borde
-    previewCtx.strokeRect(posicionX, posicionY, BLOCKSIZE, BLOCKSIZE);
+  for (let i = 0; i < BLOCKS_PER_TETROMINO; i++){
+    if (offsets[i][0] < minX) minX = offsets[i][0];
+    if (offsets[i][1] < minY) minY = offsets[i][1];
   }
 
-  //Dibujar el bloque extra de los tereominos 7-10
+  // También considerar el extra
   let extra = nextTetromino.extraBlockOffsets[shape];
   if (extra) {
-    let posX = (extra[0] + offsetX) * BLOCKSIZE;
-    let posY = (extra[1] + offsetY) * BLOCKSIZE;
+    if (extra[0] < minX) minX = extra[0];
+    if (extra[1] < minY) minY = extra[1];
+  }
 
-    previewCtx.fillRect(posX, posY, BLOCKSIZE, BLOCKSIZE);
-    previewCtx.strokeRect(posX, posY, BLOCKSIZE, BLOCKSIZE);
+  // Ajustamos para que la pieza nunca tenga coordenadas negativas
+  const offsetX = 1 - minX;
+  const offsetY = 1 - minY;
+
+  // Dibujar bloques base
+  for (let i = 0; i < BLOCKS_PER_TETROMINO; i++){
+    let x = (offsets[i][0] + offsetX) * BLOCKSIZE;
+    let y = (offsets[i][1] + offsetY) * BLOCKSIZE;
+
+    previewCtx.fillRect(x, y, BLOCKSIZE, BLOCKSIZE);
+    previewCtx.strokeRect(x, y, BLOCKSIZE, BLOCKSIZE);
+  }
+
+  // Dibujar bloque extra
+  if (extra) {
+    let x = (extra[0] + offsetX) * BLOCKSIZE;
+    let y = (extra[1] + offsetY) * BLOCKSIZE;
+
+    previewCtx.fillRect(x, y, BLOCKSIZE, BLOCKSIZE);
+    previewCtx.strokeRect(x, y, BLOCKSIZE, BLOCKSIZE);
   }
 
 }
