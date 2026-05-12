@@ -389,7 +389,7 @@ function resetGame() {
   gameOverState = false;
   nextTetromino = null;
   currentMovementTimer = 0;
-
+  
   // Create Trellis and initialisation of its grid
   theTetris = new Tetris();
   theTetris.initGrid();
