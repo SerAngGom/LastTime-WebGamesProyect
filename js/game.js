@@ -135,6 +135,27 @@ class Tetromino {
     return true;
   }
 
+  // Animación de choque (bump)
+  bump(dir) {
+    const offset = 8; // Píxeles que se desplaza en el choque
+    const duration = 50; // Milisegundos que dura la ida
+    
+    let moveX = 0;
+    let moveY = 0;
+
+    if (dir === 'left') moveX = -offset;
+    if (dir === 'right') moveX = offset;
+    if (dir === 'down') moveY = offset;
+
+    this.blocks.forEach(block => {
+      // Si el bloque ya tiene un tween activo, no creamos otro para no acumularlos
+      if (game.tweens.isTweening(block)) return;
+
+      game.add.tween(block)
+        .to({ x: block.x + moveX, y: block.y + moveY }, duration, Phaser.Easing.Back.Out, true, 0, 0, true);
+    });
+  }
+
   // Calcula la nueva coordenada de un bloque de la pieza al moverla en una dirección.
   slide(block, dir) {
     return [this.cells[block][0] + move_offsets[dir][0],
@@ -598,14 +619,26 @@ function updateGame() {
   }
 
   //Movement
-  if (cursors.left.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
-    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
+  if (cursors.left.isDown) {
+    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'left')) {
+      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'left');
+    } else if (cursors.left.justDown) { // Solo hace el "bump" al pulsar una vez, para no saturar
+      tetromino.bump('left');
+    }
   }
-  else if (cursors.right.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
-    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
+  else if (cursors.right.isDown) {
+    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'right')) {
+      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'right');
+    } else if (cursors.right.justDown) {
+      tetromino.bump('right');
+    }
   }
-  else if (cursors.down.isDown && tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
-    tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
+  else if (cursors.down.isDown) {
+    if (tetromino.canMove(tetromino.slide.bind(tetromino), 'down')) {
+      tetromino.move(tetromino.slide.bind(tetromino), tetromino.slideCenter.bind(tetromino), 'down');
+    } else if (cursors.down.justDown) {
+      tetromino.bump('down');
+    }
   }
   else if (keyRotate.justDown) {
 
