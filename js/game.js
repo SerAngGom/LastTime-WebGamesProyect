@@ -531,6 +531,16 @@ function drawNextTetromino(){
     previewCtx.strokeRect(posicionX, posicionY, BLOCKSIZE, BLOCKSIZE);
   }
 
+  //Dibujar el bloque extra de los tereominos 7-10
+  let extra = nextTetromino.extraBlockOffsets[shape];
+  if (extra) {
+    let posX = (extra[0] + offsetX) * BLOCKSIZE;
+    let posY = (extra[1] + offsetY) * BLOCKSIZE;
+
+    previewCtx.fillRect(posX, posY, BLOCKSIZE, BLOCKSIZE);
+    previewCtx.strokeRect(posX, posY, BLOCKSIZE, BLOCKSIZE);
+  }
+
 }
 
 
