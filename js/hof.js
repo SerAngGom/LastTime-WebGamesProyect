@@ -9,13 +9,13 @@ class HallOfFame {
         this.list = [];
     }
 
-    addNewScore(newScore) {
+    addNewScore(playerName, newScore) {
         let i;
         for (i = 0 ; i < this.list.length ; i++)
             if (newScore > this.list[i].score)
                 break;
         let instant = (new Date()).toUTCString();
-        this.list.splice(i, 0, {score: newScore, date: instant});
+        this.list.splice(i, 0, {name: playerName, score: newScore, date: instant});
         if (this.list.length > this.size)
             this.list.pop();
         if (i < this.size)
@@ -75,12 +75,17 @@ class HallOfFame {
             placeL = game.add.text(0, 0, i+1, styleL);
             placeL.setTextBounds(x, y+hT+hL*i, wCP, hL);
 
+            styleL.boundsAlignH = 'left';
+            let nameL = game.add.text(0, 0, this.list[i].name, styleL);
+            nameL.setTextBounds(x + wCP + 20, y + hT + hL * i, wCS, hL);
+
+            styleL.boundsAlignH = 'right';
             scoreL = game.add.text(0, 0, this.list[i].score, styleL);
-            scoreL.setTextBounds(x+wCP, y+hT+hL*i, wCS, hL);
+            scoreL.setTextBounds(x + wCP + wCS + 20, y + hT + hL * i, wCS, hL);
  
-            styleL.boundsAlignH = 'left'
+            styleL.boundsAlignH = 'left';
             dateL = game.add.text(0, 0, this.list[i].date, styleL);
-            dateL.setTextBounds(x+wCP+wCS+margenFecha, y+hT+hL*i, wCD, hL);
+            dateL.setTextBounds(x + wCP + (wCS * 2) + 40, y + hT + hL * i, wCD, hL);
         }
     }
 
@@ -101,7 +106,8 @@ function restartPlay() {
 function preloadHOF() {
     shooterHOF = new HallOfFame();
     shooterHOF.loadFromStorage();
-    let i = shooterHOF.addNewScore(score);
+    let currentPlayerName = document.getElementById("nameValue").innerText;
+    let i = shooterHOF.addNewScore(currentPlayerName, score);
     if (i >= 0) {
         msgUser = "Congratulations! The " + (i+1) + ordinalNumAbbrev(i+1);
         msgUser += " place honours this shooting session.";
