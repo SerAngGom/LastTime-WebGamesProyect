@@ -400,6 +400,10 @@ let playerName = "";
 function preLoad(){
   //loading wav assets
   game.load.audio('test_sound', 'assets/sounds/flick.wav');
+  game.load.audio('game_over', 'assets/sounds/game_over.wav');
+  game.load.audio('line_completed', 'assets/sounds/line_completed.wav');
+  game.load.audio('placement', 'assets/sounds/placement.wav');
+  game.load.audio('spawn', 'assets/sounds/spawn.wav');
   // Load level config
   game.load.json('level1', '../level_1.json');
   game.load.json('level2', '../level_2.json');
@@ -430,7 +434,7 @@ function resetGame() {
 
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
-  let bgColor = levelConfig.gridColor
+  let bgColor = levelConfig.gridColor;
 
   // Tiempo límite del nivel
   if (levelConfig.timeLimit) {
@@ -459,6 +463,10 @@ function resetGame() {
 
   // Add sound effects
   tetrominoCayendoSFX = game.add.audio('test_sound');
+  gameOverSFX = game.add.audio('game_over');
+  linesCompletedSFX = game.add.audio('line_completed');
+  placementSFX = game.add.audio('placement');
+  spawnSFX = game.add.audio('spawn');
 
   // initialisation
   gameOverState = false;
@@ -616,6 +624,9 @@ function spawn() {
 
   nextTetromino = new Tetromino(nextShape, nextColor, theTetris);
 
+  //Efecto de sonido:
+  spawnSFX.play();
+
   drawNextTetromino();
 };
 
@@ -625,6 +636,10 @@ function spawn() {
 function setGameOver(on) {
   if (timeInterval) clearInterval(timeInterval);
     gameOverState = on;
+
+    //Efecto de sonido:
+    gameOverSFX.play();
+
     if (gameOverState) {
         timer.pause();
         makeShade(0.75);
@@ -635,7 +650,15 @@ function setGameOver(on) {
             { font: 'bold 40px Arial', fill: '#ff0000' });
         title.anchor.set(0.5);
 
-        const options = ['Reiniciar Nivel', 'Volver al Menu', 'Hall of fame'];
+        //Sacamos de la info del JSON si tiene HOF y necesitamos mostrarlo
+        let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
+        let hasHOF = levelConfig.hasHOF;
+
+        const options = ['Reiniciar Nivel', 'Volver al Menu'];
+        
+        //Solo añadimos la opción 3 del hall of fame cuando el nivel tenga HOF añadido
+        if(hasHOF===true){options.push('Hall of fame');}
+
         options.forEach((opt, i) => {
             let txt = game.add.text(game.world.centerX, game.world.centerY + (i * 60), opt, 
                 { font: 'bold 28px Arial', fill: '#ffffff' });
@@ -698,12 +721,14 @@ function updateGame() {
   //Game Over
   if (gameOverState) {
 
+    let maxOptions = gameOverTexts.length; //Tamaño del array que contiene las opciones de texto del gameOverState
+
     if (cursors.up.justDown) {
-      gameOverSelection = (gameOverSelection - 1 + 3) % 3;
+      gameOverSelection = (gameOverSelection - 1 + maxOptions) % maxOptions;
       updateGameOverUI();
     } 
     else if (cursors.down.justDown) {
-      gameOverSelection = (gameOverSelection + 1) % 3;
+      gameOverSelection = (gameOverSelection + 1) % maxOptions;
       updateGameOverUI();
     }
 
@@ -771,6 +796,10 @@ function lockTetromino() {
     if (touchedLines.indexOf(y) == -1)
       touchedLines.push(y);
   }
+
+  //Efecto de sonido:
+  placementSFX.play();
+
   checkLines(touchedLines);
   spawn();
 };
@@ -810,6 +839,9 @@ function checkLines(candidateLines) {
 }
 
 function animateLineBlink(lines, onComplete) {
+  //Efecto de sonido:
+  linesCompletedSFX.play();
+
   let lastTween = null;
 
   lines.forEach(y => {
