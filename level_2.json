@@ -1,11 +1,12 @@
 {
     "settings": {
     "speed": 600,
-    "goal": "maxScoreWithSpeedUp",
-    "dynamicSpeed": true,
-    "speedIncreaseEvery": 10,
-    "allowedPieces": [0,1,2,3,4,5,6,7,8],
-    "gridColor": "0x00ff00",
-    "hasHOF": false
+    "goal": "maxScoreInTime",
+    "scoreRequired": 40,
+    "timeLimit": 60,
+    "allowedPieces": [0,1,2,3,4,5,6,7,8,9,10],
+    "gridColor": "0x1A0F1F",
+    "hasHOF": false,
+    "instructions": "Nivel 2\n\nConsigue 40 puntos en 60 segundos"
   }
 }

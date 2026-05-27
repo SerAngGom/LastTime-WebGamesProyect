@@ -885,17 +885,30 @@ function checkLevelGoal() {
     }
   }
 
-  // NIVEL 2: Velocidad dinámica (solo cambia velocidad, no termina)
-  if (cfg.goal === "maxScoreWithSpeedUp") {
-    // Aquí luego añadiremos la subida de velocidad
-  }
-
-  // NIVEL 3: límite de tiempo (lo haremos luego)
+  // NIVEL 2: límite de tiempo (lo haremos luego)
   if (cfg.goal === "maxScoreInTime") {
     if (score >= cfg.scoreRequired) {
         levelComplete();
     }
   }
+
+  // NIVEL 3: Velocidad dinámica (solo cambia velocidad, no termina)
+  if (cfg.goal === "maxScoreWithSpeedUp") {
+    // Aquí luego añadiremos la subida de velocidad
+  }
+}
+
+function levelComplete() {
+  // Limpiamos intervalos de tiempo activos para evitar fugas de memoria
+  if (timeInterval) {
+    clearInterval(timeInterval);
+  }
+  if (timer) {
+    timer.pause();
+  }
+
+  // Redirigimos a la nueva pantalla de desbloqueo gestionada en menu.js
+  game.state.start('UnlockMenu');
 }
 
 // Suma el estado de una fila para detectar si está completamente ocupada.
