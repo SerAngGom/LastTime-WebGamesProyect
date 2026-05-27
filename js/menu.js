@@ -62,14 +62,29 @@ let levelTexts = [];
 let upKey, downKey;
 
 function createLevelMenu(){
-  selectedLevel = 0;
+  
+  // En lugar de selectedLevel = 0 fija siempre, inicializa basándote en el nivel actual menos 1
+  selectedLevel = (window.currentSelectedLevel) ? (window.currentSelectedLevel - 1) : 0;
+  
+  // Por seguridad, si el cursor quedara en un nivel bloqueado, lo devolvemos al nivel 1 (0)
+  if ((selectedLevel + 1) > window.maxLevelUnlocked) {
+    selectedLevel = 0;
+  }
+
   levelTexts = [];
 
+  // Definimos los nombres base de los niveles
   const levels = ['Nivel 1', 'Nivel 2', 'Nivel 3'];
   const style = { font: 'bold 32px system-ui, Arial', fill: '#ffffff' };
 
   for(let i = 0; i < levels.length; i++){
-    let txt = game.add.text(game.world.centerX, game.world.centerY - 80 + (i * 60), levels[i], style);  // -80 y +60 offset test NÚMEROS MÁGICOS
+    // Si el nivel está por encima del máximo desbloqueado, le ponemos un candado
+    let textToShow = levels[i];
+    if ((i + 1) > window.maxLevelUnlocked) {
+      textToShow += " 🔒";
+    }
+
+    let txt = game.add.text(game.world.centerX, game.world.centerY - 80 + (i * 60), textToShow, style);
     txt.anchor.set(0.5);
     levelTexts.push(txt);
   }
@@ -83,31 +98,38 @@ function createLevelMenu(){
 
 function updateLevelMenu(){
   if (upKey.justDown) {
-    selectedLevel = (selectedLevel > 0) ? selectedLevel - 1 : 2;
+    // Código para subir en el menú...
+    do {
+      selectedLevel = (selectedLevel > 0) ? selectedLevel - 1 : 2;
+    } while ((selectedLevel + 1) > window.maxLevelUnlocked);
     updateTextSelection();
   }
 
   if (downKey.justDown) {
+    // Código para bajar en el menú...
     selectedLevel = (selectedLevel < 2) ? selectedLevel + 1 : 0;
+    if ((selectedLevel + 1) > window.maxLevelUnlocked) {
+      selectedLevel = 0;
+    }
     updateTextSelection();
   }
 
   if (enterKey.justDown) {
-    window.currentSelectedLevel = selectedLevel + 1; // +1 para que sea 1, 2 o 3 en lugar de 0, 1, 2
+    // SOLUCIÓN AQUÍ: Sincronizar el nivel elegido antes de ir a las instrucciones
+    window.currentSelectedLevel = selectedLevel + 1; 
     game.state.start('InstructionMenu');
   }
-};
+}
 
 function updateTextSelection(){
-  levelTexts.forEach((txt, index) => {
-    if (index === selectedLevel) {
-      txt.fill = "#ffffff";
-      txt.text = "> " + ["Nivel 1", "Nivel 2", "Nivel 3"][index] + " <";
+  for(let i = 0; i < levelTexts.length; i++){
+    if(i === selectedLevel){
+      levelTexts[i].fill = '#ff0000';
     } else {
-      txt.fill = "#444444";
-      txt.text = ["Nivel 1", "Nivel 2", "Nivel 3"][index];
+      // Si está bloqueado lo pintamos más oscuro, si no, blanco
+      levelTexts[i].fill = ((i + 1) > window.maxLevelUnlocked) ? '#444444' : '#ffffff';
     }
-  });  
+  }
 };
 
 let unlockMenuState = {
@@ -164,11 +186,15 @@ function updateUnlockMenu() {
 
   if (enterKey.justDown) {
     if (unlockSelection === 0) {
-      // Avanzar de nivel automáticamente
       window.currentSelectedLevel += 1;
+      
+      // REGISTRO DE DESBLOQUEO: Si el nuevo nivel es mayor al récord actual, se actualiza
+      if (window.currentSelectedLevel > window.maxLevelUnlocked) {
+        window.maxLevelUnlocked = window.currentSelectedLevel;
+      }
+      
       game.state.start('InstructionMenu');
     } else {
-      // Regresar al selector de niveles
       game.state.start('LevelMenu');
     }
   }

@@ -432,6 +432,14 @@ function resetGame() {
   // clear all blocks
   game.world.removeAll();
 
+  score = 0;
+  totalLines = 0;
+  currentTime = 0;
+
+  if (document.getElementById("score")) document.getElementById("score").innerText = "Score: 0";
+  if (document.getElementById("lines")) document.getElementById("lines").innerText = "Total lines: 0";
+  if (document.getElementById("timer")) document.getElementById("timer").innerText = "Time: 0s";
+
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
   let bgColor = levelConfig.gridColor;
@@ -881,6 +889,7 @@ function checkLevelGoal() {
   // NIVEL 1: Objetivo por puntuación
   if (cfg.goal === "reachScore") {
     if (score >= cfg.scoreRequired) {
+      if (window.maxLevelUnlocked < 2) window.maxLevelUnlocked = 2;
       levelComplete();
     }
   }
@@ -888,13 +897,26 @@ function checkLevelGoal() {
   // NIVEL 2: límite de tiempo (lo haremos luego)
   if (cfg.goal === "maxScoreInTime") {
     if (score >= cfg.scoreRequired) {
-        levelComplete();
+      if (window.maxLevelUnlocked < 3) window.maxLevelUnlocked = 3;
+      levelComplete();
     }
   }
 
   // NIVEL 3: Velocidad dinámica (solo cambia velocidad, no termina)
   if (cfg.goal === "maxScoreWithSpeedUp") {
-    // Aquí luego añadiremos la subida de velocidad
+    let scoreThreshold = cfg.speedIncreaseEvery + speedIncreaseCounter;
+    if (score >= scoreThreshold) {
+      speedIncreaseCounter = scoreThreshold;
+      let currentDelay = loop.delay;
+
+      timer.pause();
+      game.time.events.remove(loop);
+
+      let newDelay = Math.max(100, currentDelay-100);
+
+      loop = timer.loop(newDelay, fall, this);
+      timer.resume();
+    }
   }
 }
 
