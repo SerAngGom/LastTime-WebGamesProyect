@@ -1,4 +1,4 @@
-window.maxLevelUnlocked = 3;
+window.maxLevelUnlocked = 1;
 let game = new Phaser.Game(gameWidth, gameHeight, Phaser.AUTO, 'game');
 
 game.state.add('SplashMenu', splashMenuState);

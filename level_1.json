@@ -2,10 +2,10 @@
     "settings": {
     "speed": 600,
     "goal": "reachScore",
-    "scoreRequired": 80,
+    "scoreRequired": 60,
     "allowedPieces": [0,1,2,3,4,5,6],
     "gridColor": "0x0B1622",
     "hasHOF": false,
-    "instructions": "Nivel 1\n\nConsigue 80 puntos"
+    "instructions": "Nivel 1\n\nConsigue 60 puntos"
   }
 }
