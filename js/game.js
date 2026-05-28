@@ -396,6 +396,8 @@ let isAnimating = false;
 
 let playerName = "";
 
+let lineMultiplier = 1;
+
 // Cargar assets
 function preLoad(){
   //loading wav assets
@@ -439,6 +441,7 @@ function resetGame() {
   if (document.getElementById("score")) document.getElementById("score").innerText = "Score: 0";
   if (document.getElementById("lines")) document.getElementById("lines").innerText = "Total lines: 0";
   if (document.getElementById("timer")) document.getElementById("timer").innerText = "Time: 0s";
+  if (document.getElementById("bonus")) document.getElementById("bonus").innerText = "Bonus Multiplier: x1";
 
   // Level config
   let levelConfig = game.cache.getJSON('level' + window.currentSelectedLevel).settings;
@@ -841,16 +844,26 @@ function checkLines(candidateLines) {
     animateLineBlink(linesToClear, () => {
       linesToClear.forEach(y => {
         cleanLine(y);
-        score += 20;
         linesCompleted += 1;
       });
 
+      let normalPoints = linesToClear.length * 20;
+
+      let bonus = normalPoints * lineMultiplier;
+
+      score += bonus; 
+
+      if (linesToClear.length > 0) {
+        lineMultiplier = linesToClear.length;
+      }
+
       document.getElementById('score').innerHTML = `Score: ${score}`;
       document.getElementById('lines').innerHTML = `Lines: ${linesCompleted}`;
+      document.getElementById('bonus').innerHTML = `Bonus Multiplier: x${lineMultiplier}`;
 
       collapse(linesToClear);
       checkLevelGoal();
-      
+
       isAnimating = false; // Desbloqueamos
       loop.timer.resume(); // Reanudamos el tiempo justo donde estaba
     });
